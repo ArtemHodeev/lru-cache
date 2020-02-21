@@ -1,7 +1,6 @@
 package com.sandbox.demo.lru;
 
-import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,28 +17,22 @@ public class LruCache {
         private String value;
 
         private CacheNode(){}
-        public boolean hasNext() {
-            return next != null;
-        }
-        public boolean hasPrev() {
-            return prev != null;
-        }
-        public CacheNode getNext() {
+        private CacheNode getNext() {
             return next;
         }
-        public CacheNode getPrev() {
+        private CacheNode getPrev() {
             return prev;
         }
-        public String getValue() {
+        private String getValue() {
             return value;
         }
-        public void setNext(CacheNode next) {
+        private void setNext(CacheNode next) {
             this.next = next;
         }
-        public void setPrev(CacheNode prev) {
+        private void setPrev(CacheNode prev) {
             this.prev = prev;
         }
-        public void setValue(String value) {
+        private void setValue(String value) {
             this.value = value;
         }
         public String toString() {
@@ -66,11 +59,10 @@ public class LruCache {
         }
     }
 
-    private LruCache() {
+    LruCache() {
         cachedItems = new HashMap<>();
         count = 0;
     }
-
 
     public String getCachedValue(String key) {
         CacheNode actualValue = new CacheNode();
@@ -80,88 +72,76 @@ public class LruCache {
             actualValue.setNext(head);
             actualValue.setPrev(null);
 
-            if (head != null) {
-                head.setPrev(actualValue);
-            }
-
-            head = actualValue;
-            if (tail == null) {
-                tail = head;
-            }
-            cachedItems.put(actualValue.getValue().hashCode(), actualValue);
-            count ++;
+            add(actualValue);
         } else {
             actualValue = cachedItems.get(key.hashCode());
-            if (actualValue == head) {
-                return actualValue.getValue();
-            }
-
-            CacheNode prevNode = actualValue.getPrev();
-            CacheNode nextNode = actualValue.getNext();
-            prevNode.setNext(nextNode);
-
-            if (nextNode != null) {
-                nextNode.setPrev(prevNode);
-            } else {
-                tail = prevNode;
-            }
-
-            actualValue.setNext(head);
-            actualValue.setPrev(null);
-            head.setPrev(actualValue);
-            head = actualValue;
+            remove(actualValue);
+            add(actualValue);
         }
 
         if (count > MAX_SIZE) {
-            cachedItems.remove(tail.getValue().hashCode());
-
-            CacheNode tailCandidate = tail.getPrev();
-            tailCandidate.setNext(null);
-            tail = tailCandidate;
-            count --;
+            remove(tail);
         }
+
         return actualValue.getValue();
     }
 
+    public List<String> getAllCachedValues() {
+        ArrayList<String> allCachedValues = new ArrayList<>();
+        CacheNode current = head;
+
+        while (current != null) {
+            allCachedValues.add(current.getValue());
+            current = current.getNext();
+        }
+
+        return allCachedValues;
+    }
+
+    public CacheNode add(CacheNode cacheNode) {
+        cacheNode.setNext(head);
+        cacheNode.setPrev(null);
+        if (head != null) {
+            head.setPrev(cacheNode);
+        } else {
+            tail = cacheNode;
+        }
+
+        head = cacheNode;
+        cachedItems.put(cacheNode.getValue().hashCode(), cacheNode);
+        count ++;
+
+        return head;
+    }
+
+    private CacheNode remove(CacheNode actualValue) {
+        CacheNode prevNode = actualValue.getPrev();
+        CacheNode nextNode = actualValue.getNext();
+
+        if (prevNode != null) {
+            prevNode.setNext(nextNode);
+        } else {
+            head = nextNode;
+        }
+
+        if (nextNode != null) {
+            nextNode.setPrev(prevNode);
+        } else {
+            tail = prevNode;
+        }
+
+        cachedItems.remove(actualValue.getValue().hashCode());
+        count --;
+
+        return actualValue;
+    }
+
+    public void clearCache() {
+        while (head != null) {
+            remove(tail);
+        }
+    }
+
     public static void main(String[] args) {
-        List<String> samples = Arrays.asList(
-                "December", "January", "February",
-                "March", "April", "May",
-                "June", "July", "August",
-                "September", "October", "November");
-
-        LruCache lruCache = new LruCache();
-
-        for (String i: samples) {
-            lruCache.getCachedValue(i);
-        }
-
-        PrintWriter printWriter = new PrintWriter(System.out);
-
-        CacheNode current = lruCache.head;
-
-        while (current != null) {
-            printWriter.println(current.toString());
-            current = current.getNext();
-        }
-
-        printWriter.println("=================================");
-        printWriter.flush();
-
-        lruCache.getCachedValue("December");
-        lruCache.getCachedValue("March");
-        lruCache.getCachedValue("June");
-        lruCache.getCachedValue("June");
-        lruCache.getCachedValue("June");
-        lruCache.getCachedValue("June");
-        lruCache.getCachedValue("February");
-
-        current = lruCache.head;
-        while (current != null) {
-            printWriter.println(current.toString());
-            current = current.getNext();
-        }
-
-        printWriter.close();
     }
 }
