@@ -3,7 +3,9 @@ package com.sandbox.demo.lru;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+/*
+* Implementation of LRU Cache via Singleton pattern
+* */
 public class LruCache {
     public HashMap<Integer, CacheNode> cachedItems;
     public CacheNode head;
