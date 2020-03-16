@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class LruCache {
-    private final static int MAX_SIZE = 5;
-    private HashMap<Integer, CacheNode> cachedItems;
-    private CacheNode head;
-    private CacheNode tail;
-    private int count;
+    public HashMap<Integer, CacheNode> cachedItems;
+    public CacheNode head;
+    public CacheNode tail;
+    public int count;
+
+    public static LruCache instance;
 
     private class CacheNode {
         private CacheNode prev;
@@ -59,9 +60,17 @@ public class LruCache {
         }
     }
 
-    LruCache() {
+    private LruCache() {
         cachedItems = new HashMap<>();
         count = 0;
+    }
+
+    public static LruCache getInstance() {
+        if (instance == null) {
+            instance = new LruCache();
+        }
+
+        return instance;
     }
 
     public String getCachedValue(String key) {
@@ -79,7 +88,7 @@ public class LruCache {
             add(actualValue);
         }
 
-        if (count > MAX_SIZE) {
+        if (count > 5) {
             remove(tail);
         }
 

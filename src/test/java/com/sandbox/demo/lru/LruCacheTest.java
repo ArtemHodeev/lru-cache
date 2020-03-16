@@ -12,7 +12,7 @@ public class LruCacheTest {
 
     @Before
     public void createCache() {
-        lruCache = new LruCache();
+        lruCache = LruCache.getInstance();
     }
 
     @Test
