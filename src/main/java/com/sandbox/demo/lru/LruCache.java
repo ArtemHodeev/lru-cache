@@ -2,12 +2,11 @@ package com.sandbox.demo.lru;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-/*
-* Implementation of LRU Cache via Singleton pattern
-* */
+
 public class LruCache {
-    public HashMap<Integer, CacheNode> cachedItems;
+    public LinkedHashMap<Integer, CacheNode> cachedItems;
     public CacheNode head;
     public CacheNode tail;
     public int count;
@@ -44,7 +43,7 @@ public class LruCache {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof CacheNode)) {
+            if (!(obj instanceof CacheNode)) {
                 return false;
             }
 
@@ -78,17 +77,15 @@ public class LruCache {
     public String getCachedValue(String key) {
         CacheNode actualValue = new CacheNode();
 
-        if (!cachedItems.keySet().contains(key.hashCode())) {
+        CacheNode cached = cachedItems.get(key.hashCode());
+        if (cached == null) {
             actualValue.setValue(key);
-            actualValue.setNext(head);
-            actualValue.setPrev(null);
-
-            add(actualValue);
         } else {
             actualValue = cachedItems.get(key.hashCode());
             remove(actualValue);
-            add(actualValue);
         }
+
+        add(actualValue);
 
         if (count > 5) {
             remove(tail);
